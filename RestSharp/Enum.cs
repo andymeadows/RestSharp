@@ -25,7 +25,8 @@ namespace RestSharp
 		GetOrPost,
 		UrlSegment,
 		HttpHeader,
-		RequestBody
+		RequestBody,
+		QueryString
 	}
 
 	/// <summary>
@@ -48,7 +49,8 @@ namespace RestSharp
 		DELETE,
 		HEAD,
 		OPTIONS,
-		PATCH
+		PATCH,
+		MERGE,
 	}
 
 	/// <summary>

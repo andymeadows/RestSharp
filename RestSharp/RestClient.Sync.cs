@@ -1,4 +1,4 @@
-﻿#if FRAMEWORK
+﻿#if FRAMEWORK || PocketPC
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,12 +30,17 @@ namespace RestSharp
 		/// <returns>RestResponse</returns>
 		public virtual IRestResponse Execute(IRestRequest request)
 		{
+#if PocketPC
+			var method = request.Method.ToString();
+#else
 			var method = Enum.GetName(typeof(Method), request.Method);
+#endif
 			switch (request.Method)
 			{
 				case Method.POST:
 				case Method.PUT:
 				case Method.PATCH:
+				case Method.MERGE:
 					return Execute(request, method, DoExecuteAsPost);
 				default:
 					return Execute(request, method, DoExecuteAsGet);

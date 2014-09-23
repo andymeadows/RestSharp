@@ -65,7 +65,7 @@ namespace RestSharp.Extensions
 
 		public static object ChangeType(this object source, Type newType)
 		{
-#if FRAMEWORK
+#if FRAMEWORK && !PocketPC
 			return Convert.ChangeType(source, newType);
 #else
 			return Convert.ChangeType(source, newType, null);
@@ -85,23 +85,23 @@ namespace RestSharp.Extensions
 		/// Find a value from a System.Enum by trying several possible variants
 		/// of the string value of the enum.
 		/// </summary>
-		/// <param name="type">Type of enum</typeparam>
+		/// <param name="type">Type of enum</param>
 		/// <param name="value">Value for which to search</param>
 		/// <param name="culture">The culture used to calculate the name variants</param>
 		/// <returns></returns>
 		public static object FindEnumValue(this Type type, string value, CultureInfo culture)
 		{
-#if FRAMEWORK
+#if FRAMEWORK && !PocketPC
 			var ret = Enum.GetValues( type )
 			.Cast<Enum>()
 			.FirstOrDefault(v => v.ToString().GetNameVariants(culture).Contains(value, StringComparer.Create(culture, true)));
 
 			if (ret == null)
 			{
-				int enumValueAsInt;
-				if (Int32.TryParse(value, out enumValueAsInt) && Enum.IsDefined(type, enumValueAsInt))
+				var enumValueAsUnderlyingType = Convert.ChangeType(value, Enum.GetUnderlyingType(type), culture);
+				if (enumValueAsUnderlyingType != null && Enum.IsDefined(type, enumValueAsUnderlyingType))
 				{
-					ret = (Enum) Enum.ToObject(type, enumValueAsInt);
+					ret = (Enum) Enum.ToObject(type, enumValueAsUnderlyingType);
 				}
 			}
 

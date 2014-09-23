@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RestSharp.Tests</RootNamespace>
     <AssemblyName>RestSharp.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -33,6 +33,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -52,13 +53,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Release\RestSharp.Tests.xml</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.4.5.5\lib\net40\Newtonsoft.Json.dll</HintPath>
-    </Reference>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.v3.5" />
     <Reference Include="System" />
     <Reference Include="System.Core">
     </Reference>
@@ -66,24 +66,29 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="xunit, Version=1.9.0.1566, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+    <Reference Include="xunit, Version=1.9.2.1705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\xunit.1.9.0.1566\lib\xunit.dll</HintPath>
+      <HintPath>..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
     </Reference>
-    <Reference Include="xunit.extensions, Version=1.9.0.1566, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+    <Reference Include="xunit.extensions, Version=1.9.2.1705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\xunit.extensions.1.9.0.1566\lib\xunit.extensions.dll</HintPath>
+      <HintPath>..\packages\xunit.extensions.1.9.2\lib\net20\xunit.extensions.dll</HintPath>
     </Reference>
     <Reference Include="xunit.runner.tdnet, Version=1.8.0.1545, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\xunit.1.8.0.1545\lib\xunit.runner.tdnet.dll</HintPath>
+      <HintPath>..\packages\xunit.1.9.0.1566\lib\xunit.runner.tdnet.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SampleClasses\EmployeeTracker.cs" />
+    <Compile Include="SampleClasses\EnumTest.cs" />
+    <Compile Include="SampleClasses\GoogleWeatherWithAttributes.cs" />
+    <Compile Include="XmlAttributeDeserializerTests.cs" />
     <Compile Include="CultureChange.cs" />
     <Compile Include="JsonTests.cs" />
     <Compile Include="Fakes\NullHttp.cs" />
     <Compile Include="NamespacedXmlTests.cs" />
+    <Compile Include="NuSpecUpdateTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RestRequestTests.cs" />
     <Compile Include="SampleClasses\BooleanTest.cs" />
@@ -95,13 +100,14 @@
     <Compile Include="SampleClasses\misc.cs" />
     <Compile Include="SampleClasses\nullables.cs" />
     <Compile Include="SampleClasses\eventful.cs" />
+    <Compile Include="SampleClasses\Oddball.cs" />
     <Compile Include="SampleClasses\SOUser.cs" />
     <Compile Include="SampleClasses\TwilioCallList.cs" />
     <Compile Include="SampleClasses\twitter.cs" />
     <Compile Include="SerializerTests.cs" />
     <Compile Include="SimpleJson.cs" />
     <Compile Include="UrlBuilderTests.cs" />
-    <Compile Include="XmlTests.cs" />
+    <Compile Include="XmlDeserializerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="SampleData\4sq.txt">
@@ -114,6 +120,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SampleData\iso8601datetimes.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\jsondictionary.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\jsonenumtypes.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleData\objectproperty.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SampleData\underscore_prefix.txt">
@@ -187,6 +202,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <Content Include="SampleData\restsharp.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -197,6 +215,10 @@
   </Target>
   -->
   <ItemGroup>
+    <ProjectReference Include="..\RestSharp.Build\RestSharp.Build.csproj">
+      <Project>{CCC30138-3D68-44D8-AF1A-D22F769EE8DC}</Project>
+      <Name>RestSharp.Build</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RestSharp\RestSharp.csproj">
       <Project>{2ECECFBF-5F3E-40EE-A963-72336DC7ABE2}</Project>
       <Name>RestSharp</Name>

@@ -33,6 +33,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\RestSharp.xml</DocumentationFile>
+    <NoWarn>1591,1573,1658,1584,1574,1572</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -248,15 +250,16 @@
     <Compile Include="..\RestSharp\SharedAssemblyInfo.cs">
       <Link>SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\RestSharp\SimpleJson.cs">
-      <Link>SimpleJson.cs</Link>
-    </Compile>
     <Compile Include="..\restsharp\validation\Require.cs">
       <Link>Validation\Require.cs</Link>
+    </Compile>
+    <Compile Include="..\restsharp\SimpleJson.cs">
+      <Link>SimpleJson.cs</Link>
     </Compile>
     <Compile Include="..\restsharp\validation\Validate.cs">
       <Link>Validation\Validate.cs</Link>
     </Compile>
+    <Compile Include="Extensions\ResponseStatusExtensions.cs" />
     <Compile Include="Extensions\RestClientExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -14,11 +14,11 @@
 //   limitations under the License. 
 #endregion
 
-#if FRAMEWORK
+#if FRAMEWORK || PocketPC
 using System;
 using System.Net;
 
-#if !MONOTOUCH && !MONODROID
+#if !MONOTOUCH && !MONODROID && !PocketPC
 using System.Web;
 #endif
 
@@ -88,13 +88,25 @@ namespace RestSharp
 		}
 
 		/// <summary>
+		/// Execute a MERGE request
+		/// </summary>
+		public HttpResponse Merge()
+		{
+			return PostPutInternal("MERGE");
+		}
+
+		/// <summary>
 		/// Execute a GET-style request with the specified HTTP Method.  
 		/// </summary>
 		/// <param name="httpMethod">The HTTP method to execute.</param>
 		/// <returns></returns>
 		public HttpResponse AsGet(string httpMethod)
 		{
+#if PocketPC
+			return GetStyleMethodInternal(httpMethod.ToUpper());
+#else
 			return GetStyleMethodInternal(httpMethod.ToUpperInvariant());
+#endif
 		}
 
 		/// <summary>
@@ -104,12 +116,22 @@ namespace RestSharp
 		/// <returns></returns>
 		public HttpResponse AsPost(string httpMethod)
 		{
+#if PocketPC
+			return PostPutInternal(httpMethod.ToUpper());
+#else
 			return PostPutInternal(httpMethod.ToUpperInvariant());
+#endif
 		}
 
-	    private HttpResponse GetStyleMethodInternal(string method)
+		private HttpResponse GetStyleMethodInternal(string method)
 		{
 			var webRequest = ConfigureWebRequest(method, Url);
+
+			if (HasBody && (method == "DELETE" || method == "OPTIONS"))
+			{
+				webRequest.ContentType = RequestContentType;
+				WriteRequestBody(webRequest);
+			}
 
 			return GetResponse(webRequest);
 		}
@@ -135,10 +157,26 @@ namespace RestSharp
 			_restrictedHeaderActions.Add("User-Agent", (r, v) => r.UserAgent = v);
 		}
 
+		private void ExtractErrorResponse(HttpResponse httpResponse, Exception ex)
+		{
+			var webException = ex as WebException;
+
+			if (webException != null && webException.Status == WebExceptionStatus.Timeout)
+			{
+				httpResponse.ResponseStatus = ResponseStatus.TimedOut;
+				httpResponse.ErrorMessage = ex.Message;
+				httpResponse.ErrorException = webException;
+				return;
+			}
+
+			httpResponse.ErrorMessage = ex.Message;
+			httpResponse.ErrorException = ex;
+			httpResponse.ResponseStatus = ResponseStatus.Error;
+		}
+
 		private HttpResponse GetResponse(HttpWebRequest request)
 		{
-			var response = new HttpResponse();
-			response.ResponseStatus = ResponseStatus.None;
+			var response = new HttpResponse { ResponseStatus = ResponseStatus.None };
 
 			try
 			{
@@ -147,9 +185,7 @@ namespace RestSharp
 			}
 			catch (Exception ex)
 			{
-				response.ErrorMessage = ex.Message;
-				response.ErrorException = ex;
-				response.ResponseStatus = ResponseStatus.Error;
+				ExtractErrorResponse(response, ex);
 			}
 
 			return response;
@@ -163,6 +199,12 @@ namespace RestSharp
 			}
 			catch (WebException ex)
 			{
+				// Check to see if this is an HTTP error or a transport error.
+				// In cases where an HTTP error occurs ( status code >= 400 )
+				// return the underlying HTTP response, otherwise assume a
+				// transport exception (ex: connection timeout) and
+				// rethrow the exception
+
 				if (ex.Response is HttpWebResponse)
 				{
 					return ex.Response as HttpWebResponse;
@@ -173,7 +215,7 @@ namespace RestSharp
 
 		private void PreparePostData(HttpWebRequest webRequest)
 		{
-			if (HasFiles)
+			if (HasFiles || AlwaysMultipartFormData)
 			{
 				webRequest.ContentType = GetMultipartFormContentType();
 				using (var requestStream = webRequest.GetRequestStream())
@@ -200,10 +242,15 @@ namespace RestSharp
 			}
 		}
 
+		// TODO: Try to merge the shared parts between ConfigureWebRequest and ConfigureAsyncWebRequest (quite a bit of code
+		// TODO: duplication at the moment).
 		private HttpWebRequest ConfigureWebRequest(string method, Uri url)
 		{
 			var webRequest = (HttpWebRequest)WebRequest.Create(url);
-			webRequest.UseDefaultCredentials = false;
+#if !PocketPC
+			webRequest.UseDefaultCredentials = UseDefaultCredentials;
+#endif
+			webRequest.PreAuthenticate = PreAuthenticate;
 			ServicePointManager.Expect100Continue = false;
 
 			AppendHeaders(webRequest);
@@ -212,42 +259,47 @@ namespace RestSharp
 			webRequest.Method = method;
 
 			// make sure Content-Length header is always sent since default is -1
-			if(!HasFiles)
+			if (!HasFiles && !AlwaysMultipartFormData)
 			{
 				webRequest.ContentLength = 0;
 			}
 
 			webRequest.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip | DecompressionMethods.None;
-
-			if(ClientCertificates != null)
+#if FRAMEWORK
+			if (ClientCertificates != null)
 			{
-				webRequest.ClientCertificates = ClientCertificates;
+				webRequest.ClientCertificates.AddRange(ClientCertificates);
 			}
-
-			if(UserAgent.HasValue())
+#endif
+			if (UserAgent.HasValue())
 			{
 				webRequest.UserAgent = UserAgent;
 			}
 
-			if(Timeout != 0)
+			if (Timeout != 0)
 			{
 				webRequest.Timeout = Timeout;
 			}
 
-			if(Credentials != null)
+			if (ReadWriteTimeout != 0)
+			{
+				webRequest.ReadWriteTimeout = ReadWriteTimeout;
+			}
+
+			if (Credentials != null)
 			{
 				webRequest.Credentials = Credentials;
 			}
 
-			if(Proxy != null)
+			if (Proxy != null)
 			{
 				webRequest.Proxy = Proxy;
 			}
 
 			webRequest.AllowAutoRedirect = FollowRedirects;
-			if(FollowRedirects && MaxRedirects.HasValue)
+			if (FollowRedirects && MaxRedirects.HasValue)
 			{
-				webRequest.MaximumAutomaticRedirections = MaxRedirects.Value; 
+				webRequest.MaximumAutomaticRedirections = MaxRedirects.Value;
 			}
 
 			return webRequest;

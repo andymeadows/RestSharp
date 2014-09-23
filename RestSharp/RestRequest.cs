@@ -30,6 +30,11 @@ namespace RestSharp
 	public class RestRequest : IRestRequest
 	{
 		/// <summary>
+		/// Always send a multipart/form-data request - even when no Files are present.
+		/// </summary>
+		public bool AlwaysMultipartFormData { get; set; }
+		
+		/// <summary>
 		/// Serializer to use when writing JSON request bodies. Used if RequestFormat is Json.
 		/// By default the included JsonSerializer is used (currently using JSON.NET default serialization).
 		/// </summary>
@@ -45,6 +50,12 @@ namespace RestSharp
 		/// Set this to write response to Stream rather than reading into memory.
 		/// </summary>
 		public Action<Stream> ResponseWriter { get; set; }
+
+		/// <summary>
+		/// Determine whether or not the "default credentials" (e.g. the user account under which the current process is running)
+		/// will be sent along to the server. The default is false.
+		/// </summary>
+		public bool UseDefaultCredentials { get; set; }
 
 		/// <summary>
 		/// Default constructor
@@ -121,10 +132,13 @@ namespace RestSharp
 		/// <returns>This request</returns>
 		public IRestRequest AddFile (string name, string path)
 		{
+			FileInfo f = new FileInfo (path);
+			long fileLength = f.Length;
 			return AddFile(new FileParameter
 			{
 				Name = name,
 				FileName = Path.GetFileName(path),
+				ContentLength = fileLength,
 				Writer = s =>
 				{
 					using(var file = new StreamReader(path))
@@ -456,6 +470,11 @@ namespace RestSharp
 		/// Timeout in milliseconds to be used for the request. This timeout value overrides a timeout set on the RestClient.
 		/// </summary>
 		public int Timeout { get; set; }
+
+		/// <summary>
+		/// The number of milliseconds before the writing or reading times out.  This timeout value overrides a timeout set on the RestClient.
+		/// </summary>
+		public int ReadWriteTimeout { get; set; }
 
 		private int _attempts;
 

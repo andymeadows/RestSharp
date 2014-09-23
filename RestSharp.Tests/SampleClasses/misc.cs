@@ -129,6 +129,11 @@ namespace RestSharp.Tests
 		public DateTime StartDate { get; set; }
 	}
 
+	public class ObjectProperties
+	{
+		public object ObjectProperty { get; set; }
+	}
+
 	public class DatabaseCollection : List<Database>
 	{
 	}
@@ -193,5 +198,10 @@ namespace RestSharp.Tests
 		public Disposition Dashes { get; set; }
 		public Disposition LowerDashes { get; set; }
 		public Disposition Integer { get; set; }
+	}
+
+	public class DecimalNumber
+	{
+		public decimal Value { get; set; }
 	}
 }

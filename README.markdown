@@ -1,12 +1,16 @@
 # RestSharp - Simple .NET REST Client
 
+![](https://ci5.googleusercontent.com/proxy/LSXBIaYndN6I0nqGyXGtKk3-woLLXMUj-UPxpJz6yhn-qUv5qHiIpW-8QczKLztBwl1TYyqlTV-1T4dL3o4lWmaZoy9S15ylU8WC5n-dpKFiwYPvWzIR4EumHgzx0q3ZFVyceR6aj-WfLkFu-LGdrGS1Mm-uW-mrEV7L_8HnfIwj0ASI3Ze0sbmjWoMtEvI6mA1mNYBW3wpeZe-BaHXMbTa84tKXKkZcvJC7-Gdsa8T334auZiRLJ_G2idmmgLafAVW_-WXYbbpTyXXXtv_3C4clLDeIOJSYWK_ll2H95THh-JhVgRCTvlgjKb5I=s0-d-e1-ft#https://camo.githubusercontent.com/b5192c7e6e9b9cd446ae5221b4d86a24dcc38a82/687474703a2f2f69632e706963732e6c6976656a6f75726e616c2e636f6d2f6c6a656e2f33393031393336382f31343833302f31343833305f6f726967696e616c2e6a7067)
+
+RestSharp is in need of a maintainer. Please open an issue if you're interested!
+
 ### [Official Site/Blog][1] - [@RestSharp][2]  
 ### Please use the [Google Group][3] for feature requests and troubleshooting usage.
 ### License: Apache License 2.0  
 
 ### Features
 
-* Supports .NET 3.5+, Silverlight 4, Windows Phone 7, Mono, MonoTouch, Mono for Android
+* Supports .NET 3.5+, Silverlight 4, Windows Phone 7, Mono, MonoTouch, Mono for Android, Compact Framework 3.5
 * Easy installation using [NuGet](http://nuget.org/packages/RestSharp) for most .NET flavors
 * Automatic XML and JSON deserialization
 * Supports custom serialization and deserialization via ISerializer and IDeserializer
@@ -25,7 +29,7 @@ var client = new RestClient("http://example.com");
 
 var request = new RestRequest("resource/{id}", Method.POST);
 request.AddParameter("name", "value"); // adds to POST or URL querystring based on Method
-request.AddUrlSegment("id", 123); // replaces matching token in request.Resource
+request.AddUrlSegment("id", "123"); // replaces matching token in request.Resource
 
 // add parameters for all properties on an object
 request.AddObject(object);
@@ -40,12 +44,12 @@ request.AddHeader("header", "value");
 request.AddFile(path);
 
 // execute the request
-RestResponse response = client.Execute(request);
+IRestResponse response = client.Execute(request);
 var content = response.Content; // raw content as string
 
 // or automatically deserialize result
 // return content type is sniffed but can be explicitly set via RestClient.AddHandler();
-RestResponse<Person> response2 = client.Execute<Person>(request);
+IRestResponse<Person> response2 = client.Execute<Person>(request);
 var name = response2.Data.Name;
 
 // or download and save file to disk
